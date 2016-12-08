@@ -26,6 +26,8 @@ fi
 
 LIST=`find ${DIRECTORY} -name \*.ds -not -name hz\* | sort`
 
+echo #------------------------------ script starts here ------------------------------
+
 # the CTF command line utilities are needed
 echo module load 32bit/ctf/5.40
 
@@ -62,3 +64,4 @@ printf "s%ss%s_%s.ds" $subid $sesid $prjid
 printf "\n"
 done
 
+echo #------------------------------ script ends here ------------------------------
