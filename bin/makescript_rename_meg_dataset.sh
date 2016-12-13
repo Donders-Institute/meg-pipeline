@@ -61,7 +61,7 @@ prjid=PROJECTID
 pad=`expr $maxlength - ${length[n]}`
 printf '$COMMAND'" ${DATASET} "
 for i in $(seq 1 ${pad}); do printf " " ; done
-printf "TARGETDIR/sub-%s/ses-meg-%s/" $subid $sesid 
+printf "$TARGETDIR/sub-%s/ses-meg-%s/" $subid $sesid 
 printf "s%ss%s_%s.ds" $subid $sesid $prjid
 printf "\n"
 done
