@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Use as
-#   <scriptname> <directory> <>
+#   <scriptname> <directory>
 #
 
 function help {
