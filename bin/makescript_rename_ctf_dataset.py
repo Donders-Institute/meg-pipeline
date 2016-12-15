@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import re
+import getopt
+
+if hasattr(sys, 'frozen'):
+    basis = sys.executable
+elif sys.argv[0]!='':
+    basis = sys.argv[0]
+else:
+    basis = './'
+installed_folder = os.path.split(basis)[0]
+
+# bin contains this file, lib contains shared modules
+sys.path.insert(0,os.path.join(installed_folder,'../lib'))
+
+def help(name):
+    print "This script searches through a directory for CTF datasets and writes"
+    print "them to the output screen in such a way that you can easily make a script"
+    print "to rename all your datasets."
+    print ""
+    print "You should save the output to a script, edit the script and then execute it."
+    print "Use as"
+    print '  %s -c <command> -o <outputdir> [inputdir]' % name
+    print ""
+
+# set the defaults
+command = "moveDs"
+outputdir = "FIXME"
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"hc:o:",["command=","outputdir="])
+except getopt.GetoptError:
+    help(sys.argv[0])
+    sys.exit(2)
+for opt, arg in opts:
+    if opt == '-h':
+        help(sys.argv[0])
+        sys.exit()
+    elif opt in ("-c", "--command"):
+        command = arg
+    elif opt in ("-o", "--outputdir"):
+        outputdir = arg
+            
+inputdirs = args
+if len(inputdirs)<1:
+    help(sys.argv[0])
+    sys.exit(2)
+
+rootlist = []
+filelist = []
+for dir in inputdirs:
+    print '# scanning directory structure starting at %s' % dir
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            if re.match('^.*\.res4$', file) and not re.match('^hz.*\.res4$', file):
+                rootlist.append(os.path.split(root)[0]) # the directory containing the *.ds directory
+                filelist.append(os.path.split(root)[1]) # the *.ds directory itself
+
+print '# found %d CTF datasets in %d directories' % (len(filelist), len(set(rootlist)))
+
+identifierlist = []
+for root, file in zip(rootlist, filelist):
+    # add a tuple with the directory and the dataset name
+    identifier = (root, file)
+    identifierlist.append(identifier)
+
+uniqueidentifier = sorted(list(set(identifierlist)))
+
+print '# constructed %d different identifiers' % len(uniqueidentifier)
+
+sub=1
+ses=1
+subdir = []
+sesdir = []
+subvar = []
+sesvar = []
+for identifier in uniqueidentifier:
+    subdir.append("sub-%04d" % sub)
+    subvar.append("SUB%04d" % sub)
+    sesdir.append("ses-meg-%03d" % ses)
+    sesvar.append("SES%04d" % sub)
+    sub += 1
+    
+print""
+print "# please verify the following general variables"
+print "COMMAND=%s" % command
+print "OUTPUTDIR=%s" % outputdir
+
+# give some examples
+print ""
+print "#COMMAND=newDs -anon"
+print "#COMMAND=moveDs"
+
+print ""
+print "# this is needed for newDs"
+print "module load 32bit/ctf/5.40"
+
+
+
+print""
+print "# please verify the following subject and session identifier variables"
+for subv,subd,sesv,sesd,identifier in zip(subvar,subdir,sesvar,sesdir,uniqueidentifier):
+    print "%s=%s ; %s=%s  # %s" % (subv,subd,sesv,sesd,identifier)
+
+print ""    
+print "###### the script should not need any changes below this line ######"
+
+print ""    
+print "# create the target directory structure"
+for subv,sesv in zip(subvar,sesvar):
+    print "mkdir -p %s" % os.path.join("$OUTPUTDIR", "$"+subv, "$"+sesv, "meg")
+
+print ""    
+print "# copy all the files"
+
+for root,file,identifier in zip(rootlist, filelist, identifierlist):
+    index_id = uniqueidentifier.index(identifier)
+    fullfile1 = os.path.join(root, file)
+    fullfile2 = os.path.join("$OUTPUTDIR", '$'+subvar[index_id], '$'+sesvar[index_id], 'meg', file)
+    print "$COMMAND %s %s" % (fullfile1, fullfile2)
+       
