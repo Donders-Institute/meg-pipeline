@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Use as
-#   <scriptname> <directory>
+#   <scriptname> <directory> <>
 #
 
 function help {
@@ -31,7 +31,9 @@ echo #------------------------------ script starts here ------------------------
 # the CTF command line utilities are needed
 echo module load 32bit/ctf/5.40
 echo 'COMMAND="newDs -anon"'
-echo TARGETDIR=fixme
+echo 'TARGETDIR="" #specify the path where subject-specific folders should be created'
+echo 'PROJECTID="" #project id number to be appended to .ds filename'
+echo
 
 maxlength=0
 n=0
@@ -48,7 +50,7 @@ for DATASET in $LIST ; do
 n=`expr $n + 1`
 subid=`printf "%04d" $n`
 sesid=`printf "%02d"  1`
-printf "mkdir -p $TARGETDIR/sub-%s/ses-meg-%s/" $subid $sesid 
+printf 'mkdir -p $TARGETDIR/sub-%s/ses-meg-%s/' $subid $sesid 
 printf "\n"
 done
 
@@ -57,11 +59,11 @@ for DATASET in $LIST ; do
 n=`expr $n + 1`
 subid=`printf "%04d" $n`
 sesid=`printf "%02d"  1`
-prjid=PROJECTID
+prjid='$PROJECTID'
 pad=`expr $maxlength - ${length[n]}`
 printf '$COMMAND'" ${DATASET} "
 for i in $(seq 1 ${pad}); do printf " " ; done
-printf "$TARGETDIR/sub-%s/ses-meg-%s/" $subid $sesid 
+printf '$TARGETDIR/sub-%s/ses-meg-%s/' $subid $sesid 
 printf "s%ss%s_%s.ds" $subid $sesid $prjid
 printf "\n"
 done
