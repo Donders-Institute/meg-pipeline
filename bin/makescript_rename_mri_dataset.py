@@ -5,12 +5,28 @@ import sys
 import re
 import getopt
 
-sys.path.insert(0, "/Users/roboos/meg-pipeline/lib")
+if hasattr(sys, 'frozen'):
+    basis = sys.executable
+elif sys.argv[0]!='':
+    basis = sys.argv[0]
+else:
+    basis = './'
+installed_folder = os.path.split(basis)[0]
+
+# bin contains this file, lib contains shared modules
+sys.path.insert(0,os.path.join(installed_folder,'../lib'))
 import pydicom as dicom
 
 def help(name):
-    print '%s -c <command> -o <outputdir> [inputdir]' % name
-
+    print "This script searches through a directory for DICOM files and writes"
+    print "them to the output screen in such a way that you can easily make a script"
+    print "to reorganize them to a BIDS structure."
+    print ""
+    print "You should save the output to a script, edit the script and then execute it."
+    print "Use as"
+    print '  %s -c <command> -o <outputdir> [inputdir]' % name
+    print ""
+    
 # set the defaults
 command = "cp"
 outputdir = "FIXME"
@@ -44,7 +60,7 @@ for dir in inputdirs:
                 rootlist.append(root)
                 filelist.append(file)
 
-print '# found %d dicom files in %d directories' % (len(filelist), len(set(root)))
+print '# found %d dicom files in %d directories' % (len(filelist), len(set(rootlist)))
 
 patientlist = []
 protocollist = []
@@ -116,14 +132,15 @@ for subv,sesv in zip(subvar,sesvar):
 print ""    
 print "# copy all the files"
 
-previous = None
+previous=None
 for root,file,identifier,protocol in zip(rootlist, filelist, identifierlist, protocollist):
     index_id = uniqueidentifier.index(identifier)
     index_pr = uniqueprotocol.index(protocol)
     if previous!=(index_id,index_pr):
         # place a blank line between blocks of dicom files with the same identifier and protocol
         # this facilitates visual parsing of the bash script
-        if previous:
+        if previous!=None:
+            # no empty line at the start
             print ''
         previous=(index_id,index_pr)
     fullfile1 = os.path.join(root, file)
