@@ -18,11 +18,13 @@ sys.path.insert(0,os.path.join(installed_folder,'../lib'))
 import pydicom as dicom
 
 def help(name):
+    print ""
     print "This script searches through a directory for DICOM files and writes"
     print "them to the output screen in such a way that you can easily make a script"
     print "to reorganize them to a BIDS structure."
     print ""
     print "You should save the output to a script, edit the script and then execute it."
+    print ""
     print "Use as"
     print '  %s -c <command> -o <outputdir> [inputdir]' % name
     print ""

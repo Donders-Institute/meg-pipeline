@@ -17,11 +17,13 @@ installed_folder = os.path.split(basis)[0]
 sys.path.insert(0,os.path.join(installed_folder,'../lib'))
 
 def help(name):
+    print ""
     print "This script searches through a directory for CTF datasets and writes"
     print "them to the output screen in such a way that you can easily make a script"
     print "to rename all your datasets."
     print ""
     print "You should save the output to a script, edit the script and then execute it."
+    print ""
     print "Use as"
     print '  %s -c <command> -o <outputdir> [inputdir]' % name
     print ""
@@ -68,7 +70,6 @@ for root, file in zip(rootlist, filelist):
     identifierlist.append(identifier)
 
 uniqueidentifier = sorted(list(set(identifierlist)))
-
 print '# constructed %d different identifiers' % len(uniqueidentifier)
 
 sub=1
@@ -93,12 +94,9 @@ print "OUTPUTDIR=%s" % outputdir
 print ""
 print "#COMMAND=newDs -anon"
 print "#COMMAND=moveDs"
-
 print ""
 print "# this is needed for newDs"
 print "module load 32bit/ctf/5.40"
-
-
 
 print""
 print "# please verify the following subject and session identifier variables"
@@ -121,4 +119,4 @@ for root,file,identifier in zip(rootlist, filelist, identifierlist):
     fullfile1 = os.path.join(root, file)
     fullfile2 = os.path.join("$OUTPUTDIR", '$'+subvar[index_id], '$'+sesvar[index_id], 'meg', file)
     print "$COMMAND %s %s" % (fullfile1, fullfile2)
-       
+
