@@ -118,5 +118,5 @@ for root,file,identifier in zip(rootlist, filelist, identifierlist):
     index_id = uniqueidentifier.index(identifier)
     fullfile1 = os.path.join(root, file)
     fullfile2 = os.path.join("$OUTPUTDIR", '$'+subvar[index_id], '$'+sesvar[index_id], 'meg', file)
-    print "$COMMAND %s %s" % (fullfile1, fullfile2)
+    print "$COMMAND \"%s\" \"%s\"" % (fullfile1, fullfile2)
 
