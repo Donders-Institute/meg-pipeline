@@ -28,13 +28,17 @@ def help(name):
     print "Use as"
     print '  %s -c <command> -o <outputdir> [inputdir]' % name
     print ""
+    print "Optional arguments"
+    print "   -c <command>   command to execute, eg. mv or cp"
+    print "   -x             do not check file extensions"
     
 # set the defaults
 command = "cp"
 outputdir = "FIXME"
+checkextension = True
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"hc:o:",["command=","outputdir="])
+    opts, args = getopt.getopt(sys.argv[1:],"hxc:o:",["command=","outputdir="])
 except getopt.GetoptError:
     help(sys.argv[0])
     sys.exit(2)
@@ -46,6 +50,8 @@ for opt, arg in opts:
         command = arg
     elif opt in ("-o", "--outputdir"):
         outputdir = arg
+    elif opt in ("-x"):
+        checkextension = False
             
 inputdirs = args
 if len(inputdirs)<1:
@@ -58,7 +64,7 @@ for dir in inputdirs:
     print '# scanning directory structure starting at %s' % dir
     for root, dirs, files in os.walk(dir):
         for file in files:
-            if re.match('.*IMA$', file) or re.match('.*\.ima$', file) or re.match('.*\.DCM$', file) or re.match('.*\.dcm$', file):
+            if (checkextension and re.match('.*IMA$', file) or re.match('.*\.ima$', file) or re.match('.*\.DCM$', file) or re.match('.*\.dcm$', file)) or not checkextension:
                 rootlist.append(root)
                 filelist.append(file)
 
