@@ -81,7 +81,7 @@ sesvar = []
 for identifier in uniqueidentifier:
     subdir.append("sub-%04d" % sub)
     subvar.append("SUB%04d" % sub)
-    sesdir.append("ses-meg-%03d" % ses)
+    sesdir.append("ses-meg%03d" % ses)
     sesvar.append("SES%04d" % sub)
     sub += 1
     
