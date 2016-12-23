@@ -72,11 +72,13 @@ print '# found %d dicom files in %d directories' % (len(filelist), len(set(rootl
 
 patientlist = []
 protocollist = []
+seriesnumberlist = []
 print('# getting dicom headers, this may take a while...')
 for root, file in zip(rootlist, filelist):
     ds = dicom.read_file(os.path.join(root, file))
     patientlist.append(ds.PatientName)
     protocollist.append(ds.ProtocolName)
+    seriesnumberlist.append(ds.SeriesNumber)
 
 identifierlist = []
 for root, file, patient in zip(rootlist, filelist, patientlist):
@@ -85,24 +87,24 @@ for root, file, patient in zip(rootlist, filelist, patientlist):
     identifierlist.append(identifier)
 
 uniquepatient = sorted(list(set(patientlist)))
-uniqueprotocol = sorted(list(set(protocollist)))
+uniqueprotocol = sorted(list(set(map(lambda n,s: '%02d-%s' % (n, s), seriesnumberlist, protocollist))))
 uniqueidentifier = sorted(list(set(identifierlist)))
 
 print '# found %d patient IDs' % len(uniquepatient)
 print '# found %d protocols' % len(uniqueprotocol)
 print '# constructed %d different identifiers from patient IDs and directories' % len(uniqueidentifier)
 
-sub=1
-ses=1
+sub=1 # this is incremented
+ses=1 # this remains the same
 subdir = []
 sesdir = []
 subvar = []
 sesvar = []
 for identifier in uniqueidentifier:
-    subdir.append("sub-%04d" % sub)
-    subvar.append("SUB%04d" % sub)
-    sesdir.append("ses-mri%03d" % ses)
-    sesvar.append("SES%04d" % sub)
+    subdir.append("sub-%03d"    % sub)
+    subvar.append("SUB%03d"     % sub)
+    sesdir.append("ses-mri%02d" % ses)
+    sesvar.append("SES%02d"     % sub)  # note that this is correct, datasets are numbered sequentially in SUB and SES
     sub += 1
     
 index=1
@@ -110,13 +112,18 @@ protdir = []
 protvar = []
 for protocol in uniqueprotocol:
     protdir.append(protocol) # fixme, check that the name is valid for a directory
-    protvar.append("PROT%03d" % index)
+    protvar.append("PROT%02d" % index)
     index+=1
     
 print""
 print "# please verify the following general variables"
 print "OUTPUTDIR=%s" % outputdir
 print "COMMAND=%s" % command
+
+# give some examples
+print ""
+print "#COMMAND=cp"
+print "#COMMAND=mv"
 
 print""
 print "# please verify the following subject and session identifier variables"
@@ -141,9 +148,9 @@ print ""
 print "# copy all the files"
 
 previous=None
-for root,file,identifier,protocol in zip(rootlist, filelist, identifierlist, protocollist):
+for root,file,identifier,protocol,seriesnumber in zip(rootlist, filelist, identifierlist, protocollist, seriesnumberlist):
     index_id = uniqueidentifier.index(identifier)
-    index_pr = uniqueprotocol.index(protocol)
+    index_pr = uniqueprotocol.index('%02d-%s' % (seriesnumber, protocol))
     if previous!=(index_id,index_pr):
         # place a blank line between blocks of dicom files with the same identifier and protocol
         # this facilitates visual parsing of the bash script
@@ -159,4 +166,3 @@ print ""
 print "# remove empty directories"
 print "find $OUTPUTDIR -type d -empty -delete"
 
-      
