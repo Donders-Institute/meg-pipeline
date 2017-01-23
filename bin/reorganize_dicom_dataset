@@ -87,7 +87,7 @@ for root, file, patient in zip(rootlist, filelist, patientlist):
     identifierlist.append(identifier)
 
 uniquepatient = sorted(list(set(patientlist)))
-uniqueprotocol = sorted(list(set(map(lambda n,s: '%02d-%s' % (n, s), seriesnumberlist, protocollist))))
+uniqueprotocol = sorted(list(set(map(lambda n,s: '%03d-%s' % (n, s), seriesnumberlist, protocollist))))
 uniqueidentifier = sorted(list(set(identifierlist)))
 
 print '# found %d patient IDs' % len(uniquepatient)
