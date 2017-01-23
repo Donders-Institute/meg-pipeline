@@ -79,10 +79,10 @@ sesdir = []
 subvar = []
 sesvar = []
 for identifier in uniqueidentifier:
-    subdir.append("sub-%04d" % sub)
-    subvar.append("SUB%04d" % sub)
-    sesdir.append("ses-meg%03d" % ses)
-    sesvar.append("SES%04d" % sub)
+    subdir.append("sub-%03d" % sub)
+    subvar.append("SUB%03d" % sub)
+    sesdir.append("ses-meg%02d" % ses)
+    sesvar.append("SES%02d" % sub)
     sub += 1
     
 print""
@@ -117,6 +117,6 @@ print "# copy all the files"
 for root,file,identifier in zip(rootlist, filelist, identifierlist):
     index_id = uniqueidentifier.index(identifier)
     fullfile1 = os.path.join(root, file)
-    fullfile2 = os.path.join("$OUTPUTDIR", '$'+subvar[index_id], '$'+sesvar[index_id], 'meg', file)
+    fullfile2 = os.path.join("$OUTPUTDIR", '$'+subvar[index_id], '$'+sesvar[index_id], file)
     print "$COMMAND \"%s\" \"%s\"" % (fullfile1, fullfile2)
 
