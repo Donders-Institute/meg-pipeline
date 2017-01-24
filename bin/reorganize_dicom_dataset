@@ -130,7 +130,7 @@ protdir = []
 protvar = []
 for protocol in uniqueprotocol:
     protdir.append(protocol) # fixme, check that the name is valid for a directory
-    protvar.append("PROT%02d" % index)
+    protvar.append("PROT%03d" % index)
     index+=1
     
 print""
@@ -168,7 +168,7 @@ print "# copy all the files"
 previous=None
 for root,file,identifier,protocol,seriesnumber in zip(rootlist, filelist, identifierlist, protocollist, seriesnumberlist):
     index_id = uniqueidentifier.index(identifier)
-    index_pr = uniqueprotocol.index('%02d-%s' % (seriesnumber, protocol))
+    index_pr = uniqueprotocol.index('%03d-%s' % (seriesnumber, protocol))
     if previous!=(index_id,index_pr):
         # place a blank line between blocks of dicom files with the same identifier and protocol
         # this facilitates visual parsing of the bash script
