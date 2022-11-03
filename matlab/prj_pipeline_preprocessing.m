@@ -75,3 +75,21 @@ cfg                        = [];
 cfg.artfctdef              = artfctdef;
 cfg.artfctdef.reject       = 'nan'; % depends on what you want to do next
 data                       = ft_rejectartifact(cfg, data);
+
+
+% alternatively, we can also use the dss algorithm to identify
+% eyeblink-related signal topographies, and remove them from the data
+params.artifact = artfctdef.eyeblinks.artifact;
+params.artifact(:,3) = 0;
+params.demean   = true;
+
+cfg                   = [];
+cfg.method            = 'dss';
+cfg.dss.denf.function = 'denoise_avg2';
+cfg.dss.denf.params   = params;
+cfg.dss.wdim          = 75;
+cfg.numcomponent      = 10;
+cfg.channel           = 'MEG';
+cfg.cellmode          = 'yes';
+dss                   = ft_componentanalysis(cfg, data);
+
