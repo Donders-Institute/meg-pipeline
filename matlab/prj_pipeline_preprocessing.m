@@ -57,6 +57,11 @@ cfg = prj_util_artifactdetect_eyeblinks(subj.dataset, trl);
 filename = fullfile(subj.procdir, sprintf('%s_%s_eyeblinks.mat', subj.subjname, subj.sessname))
 save(filename, 'cfg');
 
+% detect saccade artifacts
+filename = fullfile(subj.procdir, sprintf('%s_%s_%s.mat', subj.subjname, subj.sessname, 'eyeblinks'));
+load(filename);
+cfg = prj_util_artifactdetect_saccades(subj.dataset, trl, [], cfg.artfctdef.zvalue.artifact);
+
 %%
 % reject the artifacts from the data, this requires a data-structure
 % (non-resampled) to exist in memory

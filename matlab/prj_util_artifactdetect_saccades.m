@@ -47,9 +47,9 @@ if createmask
   opts.mask  = tmpdata.trial;
 end
 
-% processing heuristics for the optimal detection of eyeblinks, assuming
+% processing heuristics for the optimal detection of (lateral) saccades, assuming
 % that channel is the name of an EOG channel, or the name of the analog
-% eyetracker channel that measured the pupilsize
+% eyetracker channel that measured the x-position of the eye
 cfg.artfctdef.zvalue.channel         = channel;
 cfg.artfctdef.zvalue.cutoff          = 1.5;
 cfg.artfctdef.zvalue.interactive     = 'yes';
@@ -57,6 +57,12 @@ cfg.artfctdef.zvalue.custom.funhandle = @prj_preproc_saccades;
 cfg.artfctdef.zvalue.custom.varargin  = opts;
 cfg.artfctdef.zvalue.artfctpeak       = 'yes';
 cfg.artfctdef.zvalue.artfctpeakrange  = [-0.02 0.02];
+% the value for artfctpeakrange depends a bit on what is going to be done
+% downstream: if only the fast flank is to be marked, then the values need
+% to be small. If it's intended to discard some larger portion after the
+% end of the saccade, obviously the second element needs to be extended a
+% bit
+
 
 % padding options that depend a bit on the intended downstream analysis.
 % There is no one shoe fits all. Specifically, the fltpadding requires
