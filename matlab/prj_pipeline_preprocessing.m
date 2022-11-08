@@ -66,7 +66,7 @@ cfg = prj_util_artifactdetect_saccades(subj.dataset, trl, [], cfg.artfctdef.zval
 % reject the artifacts from the data, this requires a data-structure
 % (non-resampled) to exist in memory
 
-type = {'squidjumps' 'muscle' 'eyblinks'};
+type = {'squidjumps' 'muscle' 'eyeblinks'};
 for k = 1:numel(type)
   filename = fullfile(subj.procdir, sprintf('%s_%s_%s.mat', subj.subjname, subj.sessname, type{k}));
   if exist(filename, 'file')
