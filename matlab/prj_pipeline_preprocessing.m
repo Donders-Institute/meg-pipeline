@@ -61,6 +61,21 @@ save(filename, 'cfg');
 filename = fullfile(subj.procdir, sprintf('%s_%s_%s.mat', subj.subjname, subj.sessname, 'eyeblinks'));
 load(filename);
 cfg = prj_util_artifactdetect_saccades(subj.dataset, trl, [], cfg.artfctdef.zvalue.artifact);
+filename = fullfile(subj.procdir, sprintf('%s_%s_saccades.mat', subj.subjname, subj.sessname))
+save(filename, 'cfg');
+
+%% 
+% snippet of code to inspect the density of saccades (or eyeblinks) as a
+% function of time after stimulus onset, requires a meaningful 'trl', and
+% the below moreover assumes that all trls have the same time axis,
+% otherwise some more complicated code will be needed
+filename = fullfile(subj.procdir, sprintf('%s_%s_saccades.mat', subj.subjname, subj.sessname));
+load(filename);
+mask = artifact2mask(cfg .artfctdef.zvalue.artifact, trl, max(trl(:)));
+tim  = (trl(1,3)+(0:(trl(1,2)-trl(1,1))))./1200; % assumes 1200 Hz sampling
+figure;plot(tim, mean(cat(1,mask{:}))*100);
+xlabel('time (s)'); ylabel('saccade density (%)');
+
 
 %%
 % reject the artifacts from the data, this requires a data-structure
