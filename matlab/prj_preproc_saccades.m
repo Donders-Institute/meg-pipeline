@@ -5,9 +5,9 @@ function [datvel, artifact, boolvec] = prj_preproc_saccades(dat, opts)
 % saccade.
 % 
 % The processing is as follows:
-%  - 1. remove slow trend
+%  - 1. remove slow trend, (optional)
 %  - 2. apply a median filter
-%  - 3. compute the velocity and acceleration (first and second derivative)
+%  - 3. compute the velocity (first derivative)
 %  - 4. peak detection on the velocity signal (with a minimum threshold,
 %  and a minimum peak distance -> relying on findpeaks function from signal
 %  processing toolbox)
@@ -27,7 +27,8 @@ if isempty(opts.fsample)
   ft_error('sampling frequency needs to be specified');
 end
 
-opts.smooth        = ft_getopt(opts, 'smooth', 1); % smoothing parameter for first step boxcar smoothing, in s
+opts.demean        = ft_getopt(opts, 'demean', 0);
+opts.smooth        = ft_getopt(opts, 'smooth', []); % optional smoothing parameter for first step boxcar smoothing, in s
 opts.medfiltord    = ft_getopt(opts, 'medfiltord', 0.05); % median filter order, in s
 opts.peakthreshold = ft_getopt(opts, 'peakthreshold', 30); % threshold parameter for velocity detection
 opts.peakdistance  = ft_getopt(opts, 'peakdistance', 0.1);
@@ -43,7 +44,9 @@ padsmp = round(opts.fsample./40);
 dat = ft_preproc_padding(dat, 'localmean', padsmp, padsmp);
 
 % demean the signal
-dat = dat - mean(dat);
+if opts.demean
+  dat = dat - mean(dat);
+end
 
 [m,n] = size(dat);
 if m>1
@@ -51,14 +54,20 @@ if m>1
 end
 
 % 1
-smoothsmp1 = round(opts.fsample.*opts.smooth);
-dat        = dat - ft_preproc_smooth(dat, smoothsmp1);
+if ~isempty(opts.smooth)
+  smoothsmp1 = round(opts.fsample.*opts.smooth);
+  dat        = dat - ft_preproc_smooth(dat, smoothsmp1);
+end
 
 % 2
-medfiltord = 2.*round(0.5.*opts.fsample.*opts.medfiltord)+1; % should be odd-valued
-datm       = ft_preproc_medianfilter(dat, medfiltord);
+if ~isempty(opts.medfiltord)
+  medfiltord = 2.*round(0.5.*opts.fsample.*opts.medfiltord)+1; % should be odd-valued
+  datm       = ft_preproc_medianfilter(dat, medfiltord);
+else
+  datm = dat;
+end
 
-% 3
+% 3: compute velocity signal
 dat  = [mean(datm(:,1:3),2)*ones(1,3) datm mean(datm(:,end-2:end),2)*ones(1,3)]; % extra pad to deal with derivative artifacts
 datvel = convn(dat, [0.5 0 -0.5], 'same'); % first derivative = velocity
 %datacc = convn(dat, [1 -2 1],     'same'); % second derivative = acceleration
