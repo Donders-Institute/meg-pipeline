@@ -54,14 +54,14 @@ save(filename, 'cfg');
 
 % detect eyeblink artifacts
 cfg = prj_util_artifactdetect_eyeblinks(subj.dataset, trl);
-filename = fullfile(subj.procdir, sprintf('%s_%s_eyeblinks.mat', subj.subjname, subj.sessname))
+filename = fullfile(subj.procdir, sprintf('%s_%s_eyeblinedit ks.mat', subj.subjname, subj.sessname));
 save(filename, 'cfg');
 
 % detect saccade artifacts
 filename = fullfile(subj.procdir, sprintf('%s_%s_%s.mat', subj.subjname, subj.sessname, 'eyeblinks'));
 load(filename);
 cfg = prj_util_artifactdetect_saccades(subj.dataset, trl, [], cfg.artfctdef.zvalue.artifact);
-filename = fullfile(subj.procdir, sprintf('%s_%s_saccades.mat', subj.subjname, subj.sessname))
+filename = fullfile(subj.procdir, sprintf('%s_%s_saccades.mat', subj.subjname, subj.sessname));
 save(filename, 'cfg');
 
 %% 

@@ -33,6 +33,6 @@ cfg.artfctdef.zvalue.hilbert         = 'yes';
 % processed for artifacts anyhow)
 cfg.artfctdef.zvalue.fltpadding    = 0;
 cfg.artfctdef.zvalue.trlpadding    = 0.2;
-cfg.artfctdef.zvalue.artpadding    = 0.05;
+cfg.artfctdef.zvalue.artpadding    = 0.1;
 
 cfg = ft_artifact_zvalue(cfg);
