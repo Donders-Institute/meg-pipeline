@@ -27,8 +27,8 @@ screentop  = cfg.display(2);
 screenright = cfg.display(3);
 screenbottom = cfg.display(4);
 
-xchan = match_str(datain.label, {'UADC005';'UADC007'});
-ychan = match_str(datain.label, {'UADC006';'UADC008'});
+xchan = match_str(datain.label, {'UADC005';'UADC008'});
+ychan = match_str(datain.label, {'UADC006';'UADC009'});
 
 dataout = datain;
 for k = 1:numel(dataout.trial)
