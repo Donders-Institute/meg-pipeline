@@ -1,10 +1,21 @@
-function cfg = prj_util_artifactdetect_eyeblinks(dataset, trl, channel)
+function cfg = prj_util_artifactdetect_eyeblinks(dataset, trl, channel, opts)
 
-if nargin<3
+if nargin<3 || isempty(channel)
   channel = 'UADC007';
 end
 
-trltmp = prj_util_epochtrl(trl);
+if nargin<4
+  opts = [];
+end
+
+opts.fsample    = ft_getopt(opts, 'fsample',    1200); % for the trial cutting
+opts.maxdur     = ft_getopt(opts, 'maxdur',     5);    % for the trial cutting
+
+if istable(trl)
+  trl = table2array(trl(:,1:3));
+end
+
+trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
 
 cfg                                = [];
 cfg.dataset                        = dataset;
@@ -16,7 +27,7 @@ cfg.memory                         = 'low';
 % that channel is the name of an EOG channel, or the name of the analog
 % eyetracker channel that measured the pupilsize
 cfg.artfctdef.zvalue.channel         = channel;
-cfg.artfctdef.zvalue.cutoff          = 4;
+cfg.artfctdef.zvalue.cutoff          = 2;
 cfg.artfctdef.zvalue.interactive     = 'yes';
 cfg.artfctdef.zvalue.bpfilter        = 'yes';
 cfg.artfctdef.zvalue.bpfreq          = [1 10];
@@ -34,5 +45,6 @@ cfg.artfctdef.zvalue.hilbert         = 'yes';
 cfg.artfctdef.zvalue.fltpadding    = 0;
 cfg.artfctdef.zvalue.trlpadding    = 0.2;
 cfg.artfctdef.zvalue.artpadding    = 0.1;
+cfg.artfctdef.zvalue.interactive   = ft_getopt(opts, 'interactive', 'yes');
 
 cfg = ft_artifact_zvalue(cfg);

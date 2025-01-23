@@ -17,13 +17,25 @@ end
 
 if nargin>3 || ~isempty(blinkartifact)
   createmask = true;
+else 
+  createmask = false;
 end
 
 if nargin<5
   opts = [];
 end
 
-trltmp = prj_util_epochtrl(trl);
+opts.display    = ft_getopt(opts, 'display',    [1920 1080]); % width x height in pixels
+opts.screensize = ft_getopt(opts, 'screensize', [53 30]); % width x height in the same units as screen distance
+opts.screendist = ft_getopt(opts, 'screendist', 80);
+opts.fsample    = ft_getopt(opts, 'fsample',    1200); % for the trial cutting
+opts.maxdur     = ft_getopt(opts, 'maxdur',     5);    % for the trial cutting
+
+if istable(trl)
+  trl = table2array(trl(:,1:3));
+end
+
+trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
 
 hdr = ft_read_header(dataset);
 
@@ -41,13 +53,13 @@ if endsWith(dataset, 'ds')
   cfg.analog_dac_range = [-5 5];
   cfg.analog_x_range   = [0 1];
   cfg.analog_y_range   = [0 1];
-  cfg.display          = [0 0 1919 1079];
+  cfg.display          = [0 0 opts.display-1];
   data                 = eyelink_voltage2gaze(cfg, data);
 
   cfg            = [];
-  cfg.display    = [1920 1080];
-  cfg.screensize = [53 30];
-  cfg.screendist = 80;
+  cfg.display    = opts.display;
+  cfg.screensize = opts.screensize;
+  cfg.screendist = opts.screendist;
   data           = eyelink_gaze2degree(cfg, data);
 end
 
@@ -77,7 +89,7 @@ end
 % data_vel      = ft_math(cfg, data_vel);
 
 opts.fsample    = data.fsample;
-opts.medfiltord = 0.075; 
+opts.medfiltord = ft_getopt(opts, 'medfiltord', 0.075); 
 
 cfg                                = [];
 cfg.continuous                     = 'yes';
@@ -86,7 +98,7 @@ cfg.memory                         = 'high';
 % processing heuristics for the optimal detection of (lateral) saccades, assuming
 % that channel is the name of an EOG channel, or the name of the analog
 % eyetracker channel that measured the x-position of the eye
-cfg.artfctdef.zvalue.channel         = 'degX';
+cfg.artfctdef.zvalue.channel         = {'degX';'degY'};
 cfg.artfctdef.zvalue.cutoff          = 30;
 cfg.artfctdef.zvalue.interactive     = 'yes';
 cfg.artfctdef.zvalue.custom.funhandle = @prj_preproc_saccades; 
@@ -98,6 +110,7 @@ cfg.artfctdef.zvalue.zscore           = 'no';
 cfg.artfctdef.zvalue.fltpadding    = 0;
 cfg.artfctdef.zvalue.trlpadding    = 0;
 cfg.artfctdef.zvalue.artpadding    = 0.01;
+cfg.artfctdef.zvalue.interactive   = ft_getopt(opts, 'interactive', 'yes');
 
 cfg = ft_artifact_zvalue(cfg, data);
 
@@ -108,7 +121,7 @@ tmptrl(:,1) = tmptrl(:,1)-90;
 tmptrl(:,2) = tmptrl(:,2)+90;
 tmptrl = max(tmptrl,1);
 tmptrl = min(tmptrl,max(data.sampleinfo(:)));
-tmptrl(:,3) = 0;
+tmptrl(:,3) = -artifact(:,1)+tmptrl(:,1);
 
 tmpcfg = [];
 tmpcfg.trl = tmptrl;
@@ -116,9 +129,10 @@ data = ft_redefinetrial(tmpcfg, data);
 A = zeros(numel(data.trial),1);
 xchan = match_str(data.label, 'degX');
 for k = 1:numel(data.trial)
-  pre = nanmedian(data.trial{k}(xchan,1:60));
-  pst = nanmedian(data.trial{k}(xchan,(end-59):end));
+  pre = nanmedian(data.trial{k}(xchan,61:90));
+  pst = nanmedian(data.trial{k}(xchan,(end-89):(end-60)));
   A(k,1) = pst-pre;
+  %A(k,2) = 
 end
 
 % add the estimated amplitude to the artifact description

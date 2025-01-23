@@ -54,7 +54,7 @@ save(filename, 'cfg');
 
 % detect eyeblink artifacts
 cfg = prj_util_artifactdetect_eyeblinks(subj.dataset, trl);
-filename = fullfile(subj.procdir, sprintf('%s_%s_eyeblinedit ks.mat', subj.subjname, subj.sessname));
+filename = fullfile(subj.procdir, sprintf('%s_%s_eyeblinks.mat', subj.subjname, subj.sessname));
 save(filename, 'cfg');
 
 % detect saccade artifacts

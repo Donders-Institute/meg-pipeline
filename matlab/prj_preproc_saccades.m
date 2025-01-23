@@ -49,9 +49,9 @@ if opts.demean
 end
 
 [m,n] = size(dat);
-if m>1
-  error('only a single signal is allowed');
-end
+% if m>1
+%   error('only a single signal is allowed');
+% end
 
 % 1
 if ~isempty(opts.smooth)
@@ -77,11 +77,11 @@ datvel = datvel(:,4:end-3).*opts.fsample;
 
 if ~isempty(opts.mask)
   mask = ft_preproc_padding(opts.mask{counter}, 'edge', padsmp, padsmp);
-  datvel(mask~=0) = nan;
+  datvel(:,mask~=0) = nan;
 end
 
 if nargout>1
-  [p, ix] = findpeaks(abs(datvel), 'MinPeakHeight', opts.peakthreshold, 'MinPeakDistance', round(opts.fsample.*opts.peakdistance));
+  [p, ix] = findpeaks(sqrt(sum(datvel.^2,1)), 'MinPeakHeight', opts.peakthreshold, 'MinPeakDistance', round(opts.fsample.*opts.peakdistance));
   ix      = ix-padsmp;
 
   on  = ix(:) - round(opts.fsample.*opts.pretim);
@@ -89,12 +89,12 @@ if nargout>1
   offset = -ix(:);
 
 
-  artifact = [max(on, 1) min(off, numel(datorig)) offset];
+  artifact = [max(on, 1) min(off, size(datorig,2)) offset];
 
   datvel  = datvel(:,(padsmp+1):(end-padsmp)); % un-pad, this can be done with ft_preproc_padding
-  boolvec = trl2boolvec(artifact, 'endsample', numel(datorig));
+  boolvec = trl2boolvec(artifact, 'endsample', size(datorig,2));
 else
-  datvel = abs(datvel(:,(padsmp+1):(end-padsmp)));
+  datvel = sqrt(sum(datvel(:,(padsmp+1):(end-padsmp)).^2,1));
 end
 
 n = max(numel(opts.mask), 1);

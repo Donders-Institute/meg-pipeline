@@ -9,7 +9,7 @@ function dataout = eyelink_voltage2gaze(cfg, datain)
 % Xgaze = S*(screenright  - screenleft + 1) + screenleft
 % Ygaze = S*(screenbottom - screentop  + 1) + screentop
 
-%cfg = ft_checkconfig(cfg, 'required', {'analog_dac_range', 'analog_x_range', 'analog_y_range' 'display'});
+% cfg = ft_checkconfig(cfg, 'required', {'analog_dac_range', 'analog_x_range', 'analog_y_range' 'display'});
 
 cfg.analog_dac_range = ft_getopt(cfg, 'analog_dac_range', [-5 5]);
 cfg.analog_x_range   = ft_getopt(cfg, 'analog_x_range',   [0 1]);
