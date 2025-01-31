@@ -14,6 +14,9 @@ clear prj_preproc_saccades
 if nargin<3 || isempty(channel)
   channel = {'UADC005';'UADC006'};
 end
+if ischar(channel)
+  channel = {channel};
+end
 
 if nargin>3 || ~isempty(blinkartifact)
   createmask = true;
@@ -31,36 +34,50 @@ opts.screendist = ft_getopt(opts, 'screendist', 80);
 opts.fsample    = ft_getopt(opts, 'fsample',    1200); % for the trial cutting
 opts.maxdur     = ft_getopt(opts, 'maxdur',     5);    % for the trial cutting
 
-if istable(trl)
-  trl = table2array(trl(:,1:3));
-end
+if isstruct(dataset)
+  hasdata = true;
+  data = dataset;
 
-trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
+  cfg = [];
+  cfg.channel = channel;
+  data = ft_selectdata(cfg, data);
 
-hdr = ft_read_header(dataset);
+else
+  hasdata = false;
 
-cfg            = [];
-cfg.dataset    = dataset;
-cfg.trl        = trltmp;
-cfg.continuous = 'yes';
-cfg.channel    = channel;
-data           = ft_preprocessing(cfg);
-data           = removefields(data, {'elec'});
+  %use the supplied dataset and trl matrix to load in the data
+  if istable(trl)
+    trl = table2array(trl(:,1:3));
+  end
 
-if endsWith(dataset, 'ds')
-  % voltage channel data, convert to degrees of visual angle
-  cfg                  = [];
-  cfg.analog_dac_range = [-5 5];
-  cfg.analog_x_range   = [0 1];
-  cfg.analog_y_range   = [0 1];
-  cfg.display          = [0 0 opts.display-1];
-  data                 = eyelink_voltage2gaze(cfg, data);
+  trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
+
+  hdr = ft_read_header(dataset);
 
   cfg            = [];
-  cfg.display    = opts.display;
-  cfg.screensize = opts.screensize;
-  cfg.screendist = opts.screendist;
-  data           = eyelink_gaze2degree(cfg, data);
+  cfg.dataset    = dataset;
+  cfg.trl        = trltmp;
+  cfg.continuous = 'yes';
+  cfg.channel    = channel;
+  data           = ft_preprocessing(cfg);
+  data           = removefields(data, {'elec'});
+
+  if endsWith(dataset, 'ds')
+    % voltage channel data, convert to degrees of visual angle
+    cfg                  = [];
+    cfg.analog_dac_range = [-5 5];
+    cfg.analog_x_range   = [0 1];
+    cfg.analog_y_range   = [0 1];
+    cfg.display          = [0 0 opts.display-1];
+    data                 = eyelink_voltage2gaze(cfg, data);
+
+    cfg            = [];
+    cfg.display    = opts.display;
+    cfg.screensize = opts.screensize;
+    cfg.screendist = opts.screendist;
+    data           = eyelink_gaze2degree(cfg, data);
+  end
+  channel = {'degX' 'degY'};
 end
 
 if createmask
@@ -98,8 +115,8 @@ cfg.memory                         = 'high';
 % processing heuristics for the optimal detection of (lateral) saccades, assuming
 % that channel is the name of an EOG channel, or the name of the analog
 % eyetracker channel that measured the x-position of the eye
-cfg.artfctdef.zvalue.channel         = {'degX';'degY'};
-cfg.artfctdef.zvalue.cutoff          = 30;
+cfg.artfctdef.zvalue.channel         = channel;
+cfg.artfctdef.zvalue.cutoff          = opts.cutoff;
 cfg.artfctdef.zvalue.interactive     = 'yes';
 cfg.artfctdef.zvalue.custom.funhandle = @prj_preproc_saccades; 
 cfg.artfctdef.zvalue.custom.varargin  = opts;
@@ -125,9 +142,13 @@ tmptrl(:,3) = -artifact(:,1)+tmptrl(:,1);
 
 tmpcfg = [];
 tmpcfg.trl = tmptrl;
+if isfield(data, 'trialinfo') && istable(data.trialinfo)
+  % occasionally very funky tables might confuse ft_redefinetrial
+  data = rmfield(data, 'trialinfo');
+end
 data = ft_redefinetrial(tmpcfg, data);
 A = zeros(numel(data.trial),1);
-xchan = match_str(data.label, 'degX');
+xchan = match_str(data.label, channel{1});
 for k = 1:numel(data.trial)
   pre = nanmedian(data.trial{k}(xchan,61:90));
   pst = nanmedian(data.trial{k}(xchan,(end-89):(end-60)));

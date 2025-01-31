@@ -11,17 +11,36 @@ end
 opts.fsample    = ft_getopt(opts, 'fsample',    1200); % for the trial cutting
 opts.maxdur     = ft_getopt(opts, 'maxdur',     5);    % for the trial cutting
 
-if istable(trl)
-  trl = table2array(trl(:,1:3));
+cfg = [];
+if ischar(dataset)
+  hasdata = false;
+
+  % read data from disk and use the supplied trl matrix
+  if istable(trl)
+    trl = table2array(trl(:,1:3));
+  end
+
+  trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
+
+  cfg.dataset                        = dataset;
+  cfg.trl                            = trltmp;
+  cfg.continuous                     = 'yes';
+  cfg.memory                         = 'low';
+  
+  % padding options that depend a bit on the intended downstream analysis.
+  % There is no one shoe fits all. Specifically, the fltpadding requires
+  % a non-zero value of 0.5*the intended cfg.padding in ft_preprocessing, to
+  % avoid highpassfilter ringing caused by a squidjump to affect the relevant
+  % data. Note that this slows down the current processing step, but better
+  % safe than sorry. If a very wide definition of epochs is already used,
+  % then fltpadding could be specified to 0 (because sufficient data is
+  % processed for artifacts anyhow)
+  cfg.artfctdef.zvalue.fltpadding    = 0;
+  cfg.artfctdef.zvalue.trlpadding    = 0.2;
+else
+  hasdata = true;
+  data = dataset;
 end
-
-trltmp = prj_util_epochtrl(trl, opts.fsample, opts.maxdur);
-
-cfg                                = [];
-cfg.dataset                        = dataset;
-cfg.trl                            = trltmp;
-cfg.continuous                     = 'yes';
-cfg.memory                         = 'low';
 
 % processing heuristics for the optimal detection of eyeblinks, assuming
 % that channel is the name of an EOG channel, or the name of the analog
@@ -34,17 +53,12 @@ cfg.artfctdef.zvalue.bpfreq          = [1 10];
 cfg.artfctdef.zvalue.bpfilttype      = 'firws';
 cfg.artfctdef.zvalue.hilbert         = 'yes';
 
-% padding options that depend a bit on the intended downstream analysis.
-% There is no one shoe fits all. Specifically, the fltpadding requires
-% a non-zero value of 0.5*the intended cfg.padding in ft_preprocessing, to
-% avoid highpassfilter ringing caused by a squidjump to affect the relevant
-% data. Note that this slows down the current processing step, but better
-% safe than sorry. If a very wide definition of epochs is already used,
-% then fltpadding could be specified to 0 (because sufficient data is
-% processed for artifacts anyhow)
-cfg.artfctdef.zvalue.fltpadding    = 0;
-cfg.artfctdef.zvalue.trlpadding    = 0.2;
+
 cfg.artfctdef.zvalue.artpadding    = 0.1;
 cfg.artfctdef.zvalue.interactive   = ft_getopt(opts, 'interactive', 'yes');
 
-cfg = ft_artifact_zvalue(cfg);
+if ~hasdata
+  cfg = ft_artifact_zvalue(cfg);
+else
+  cfg = ft_artifact_zvalue(cfg, data);
+end

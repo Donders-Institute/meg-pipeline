@@ -21,6 +21,10 @@ if nargin<3
   maxdur = 5;
 end
 
+if istable(trlin)
+  trlin = table2array(trlin(:,1:3));
+end
+
 nsmp = maxdur*fsample;
 stepsize = round(0.95*nsmp);
 

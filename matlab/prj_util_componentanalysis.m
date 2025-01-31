@@ -13,6 +13,7 @@ if ~isfield(cfg, 'method')
   cfg.fastica.lastEig = 150;
   cfg.fastica.numOfIC = 50;
 end
+cfg.channel = 'MEG';
 
 if hasdata
   comp = ft_componentanalysis(cfg, data);

@@ -1,6 +1,10 @@
-function cfg = prj_util_artifactdetect_squidjumps(dataset, trl)
+function cfg = prj_util_artifactdetect_squidjumps(dataset, trl, maxdur)
 
-trltmp = prj_util_epochtrl(trl);
+if nargin<3
+  maxdur = 5;
+end
+
+trltmp = prj_util_epochtrl(trl, [], maxdur);
 
 cfg                                = [];
 cfg.dataset                        = dataset;
